@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Mi Princesita</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Dancing+Script:wght@500;700&display=swap');
+
+:root{
+  --cream:#f9efe4;
+  --paper:#fffaf3;
+  --ink:#4a2a2e;
+  --rose:#c97b86;
+  --rose-light:#f3d9de;
+  --deep:#8c3a46;
+  --gold:#c9a15a;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  background:
+    radial-gradient(circle at 15% 20%, #fdf3e9 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, #f6e3dd 0%, transparent 50%),
+    var(--cream);
+  font-family:'Cormorant Garamond', serif;
+  color:var(--ink);
+  overflow-x:hidden;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  position:relative;
+}
+
+/* ambient floating hearts in background */
+.ambient{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:0;
+}
+.ambient span{
+  position:absolute;
+  bottom:-10%;
+  font-size:18px;
+  color:var(--rose);
+  opacity:.25;
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+  10%{ opacity:.3; }
+  90%{ opacity:.2; }
+  100%{ transform:translateY(-115vh) rotate(25deg); opacity:0; }
+}
+
+/* click hearts */
+.click-heart{
+  position:fixed;
+  pointer-events:none;
+  font-size:20px;
+  color:var(--deep);
+  z-index:50;
+  animation:popHeart 1100ms ease-out forwards;
+}
+@keyframes popHeart{
+  0%{ transform:translateY(0) scale(.6); opacity:0; }
+  15%{ opacity:1; transform:translateY(-8px) scale(1); }
+  100%{ transform:translateY(-90px) scale(1.1); opacity:0; }
+}
+
+.stage{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:560px;
+}
+
+/* ===== BOOK ===== */
+.book{
+  position:relative;
+  background:var(--paper);
+  border-radius:6px;
+  box-shadow:
+    0 2px 0 var(--paper),
+    0 18px 40px -12px rgba(76,42,46,.35),
+    0 2px 6px rgba(76,42,46,.15);
+  min-height:520px;
+  padding:0;
+  overflow:hidden;
+  border:1px solid rgba(140,58,70,.12);
+  transform-origin:center;
+}
+
+.book::before{
+  /* spine shadow */
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:26px;
+  background:linear-gradient(90deg, rgba(140,58,70,.14), transparent);
+  z-index:2;
+  pointer-events:none;
+}
+
+.book.closing{
+  animation:bookClose 900ms cubic-bezier(.6,0,.4,1);
+}
+@keyframes bookClose{
+  0%{ transform:scaleY(1); }
+  45%{ transform:scaleY(.035); }
+  55%{ transform:scaleY(.035); }
+  100%{ transform:scaleY(1); }
+}
+
+.pages{ position:relative; min-height:520px; }
+.pages.fast .page{ transition-duration:140ms; }
+
+.page{
+  position:absolute;
+  inset:0;
+  padding:52px 44px 44px 58px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  opacity:0;
+  transform:translateX(24px) scale(.98);
+  pointer-events:none;
+  transition:opacity .55s ease, transform .55s ease;
+}
+.page.active{
+  opacity:1;
+  transform:translateX(0) scale(1);
+  pointer-events:auto;
+}
+.page.leaving{
+  opacity:0;
+  transform:translateX(-24px) scale(.98);
+}
+
+.eyebrow{
+  font-family:'Dancing Script', cursive;
+  font-size:22px;
+  color:var(--rose);
+  margin:0 0 6px 0;
+}
+
+.chapter-title{
+  font-size:28px;
+  font-style:italic;
+  font-weight:600;
+  color:var(--deep);
+  margin:0 0 22px 0;
+  letter-spacing:.3px;
+}
+
+.page-text{
+  font-size:20px;
+  line-height:1.75;
+  font-weight:400;
+  color:var(--ink);
+}
+.page-text b{
+  color:var(--deep);
+  font-weight:600;
+}
+
+/* drop cap for cover/first page */
+.dropcap::first-letter{
+  font-family:'Dancing Script', cursive;
+  font-size:58px;
+  color:var(--rose);
+  float:left;
+  line-height:0.8;
+  padding-right:8px;
+  padding-top:6px;
+}
+
+/* corner page-turn hint */
+.corner{
+  position:absolute;
+  right:0; bottom:0;
+  width:0; height:0;
+  border-style:solid;
+  border-width:0 0 34px 34px;
+  border-color:transparent transparent var(--rose-light) transparent;
+  filter:drop-shadow(-2px -2px 3px rgba(76,42,46,.15));
+  cursor:pointer;
+  transition:transform .2s ease;
+  z-index:3;
+}
+.corner:hover{ transform:scale(1.15); }
+
+/* ===== COVER ===== */
+.cover{
+  align-items:center;
+  text-align:center;
+  gap:14px;
+}
+.cover-default, .cover-photo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+}
+.cover-photo{ display:none; }
+.cover.photo-mode .cover-default{ display:none; }
+.cover.photo-mode .cover-photo{ display:flex; }
+
+.seal{
+  width:78px; height:78px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #b9505f, var(--deep));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--rose-light);
+  font-family:'Dancing Script', cursive;
+  font-size:34px;
+  box-shadow:0 6px 16px rgba(140,58,70,.4), inset 0 -3px 6px rgba(0,0,0,.25);
+  margin-bottom:8px;
+  animation:sealPulse 3.4s ease-in-out infinite;
+}
+@keyframes sealPulse{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.05); }
+}
+.cover h1{
+  font-size:34px;
+  font-style:italic;
+  font-weight:600;
+  color:var(--deep);
+  margin:6px 0 2px 0;
+}
+.cover p.sub{
+  font-family:'Dancing Script', cursive;
+  font-size:20px;
+  color:var(--rose);
+  margin:0 0 22px 0;
+}
+.open-btn{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:18px;
+  letter-spacing:.5px;
+  color:var(--paper);
+  background:linear-gradient(135deg, var(--rose), var(--deep));
+  border:none;
+  padding:12px 30px;
+  border-radius:999px;
+  cursor:pointer;
+  box-shadow:0 8px 18px -6px rgba(140,58,70,.55);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.open-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 22px -6px rgba(140,58,70,.6); }
+.open-btn:active{ transform:translateY(0); }
+
+/* cover photo mode */
+.cover-photo-frame{
+  position:relative;
+  width:100%;
+  height:420px;
+  border-radius:4px;
+  overflow:hidden;
+  cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(140,58,70,.15);
+}
+.cover-photo-frame img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .5s ease, filter .5s ease;
+  filter:saturate(1.02);
+}
+.cover-photo-frame:hover img{ transform:scale(1.04); }
+.cover-photo-frame::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(74,42,46,0) 55%, rgba(74,42,46,.55) 100%);
+}
+.cover-photo-caption{
+  position:absolute;
+  left:0; right:0; bottom:16px;
+  z-index:2;
+  font-family:'Dancing Script', cursive;
+  font-size:20px;
+  color:#fff;
+  margin:0;
+  text-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+
+/* heart below the book */
+.heart-below{
+  display:flex;
+  justify-content:center;
+  margin-top:20px;
+  opacity:0;
+  max-height:0;
+  overflow:visible;
+  transition:opacity .6s ease .1s;
+  pointer-events:none;
+}
+.heart-below.show{
+  opacity:1;
+  pointer-events:auto;
+}
+.heart-below-btn{
+  width:64px; height:64px;
+  border:none;
+  background:none;
+  cursor:pointer;
+  animation:beat 1.8s ease-in-out infinite;
+}
+.heart-below-btn svg{
+  width:100%; height:100%;
+  filter:drop-shadow(0 6px 14px rgba(140,58,70,.4));
+}
+
+/* ===== PETALS PAGE ===== */
+.petals{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+.petal{
+  font-family:'Cormorant Garamond', serif;
+  font-size:16px;
+  font-style:italic;
+  padding:9px 16px;
+  border-radius:999px;
+  background:var(--rose-light);
+  color:var(--deep);
+  border:1px solid rgba(140,58,70,.15);
+  cursor:pointer;
+  user-select:none;
+  transition:all .25s ease;
+  position:relative;
+}
+.petal.revealed{
+  background:var(--deep);
+  color:var(--rose-light);
+}
+.petal-reveal{
+  display:block;
+  margin-top:16px;
+  font-size:18px;
+  min-height:52px;
+  color:var(--ink);
+  font-style:italic;
+  line-height:1.5;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .4s ease, transform .4s ease;
+}
+.petal-reveal.show{ opacity:1; transform:translateY(0); }
+
+.petal-progress{
+  font-size:14px;
+  color:var(--rose);
+  margin-top:14px;
+  font-style:italic;
+}
+
+/* ===== FINAL PAGE ===== */
+.final-page{ text-align:center; align-items:center; }
+.heart-btn{
+  width:110px; height:110px;
+  border:none;
+  background:none;
+  cursor:pointer;
+  margin:10px auto 6px auto;
+  position:relative;
+}
+.heart-btn svg{
+  width:100%; height:100%;
+  filter:drop-shadow(0 6px 14px rgba(140,58,70,.4));
+  animation:beat 1.6s ease-in-out infinite;
+}
+@keyframes beat{
+  0%,100%{ transform:scale(1); }
+  15%{ transform:scale(1.12); }
+  30%{ transform:scale(1); }
+  45%{ transform:scale(1.08); }
+  60%{ transform:scale(1); }
+}
+.tap-hint{
+  font-family:'Dancing Script', cursive;
+  color:var(--rose);
+  font-size:18px;
+  margin-top:2px;
+}
+.final-message{
+  margin-top:18px;
+  font-size:20px;
+  line-height:1.7;
+  opacity:0;
+  max-height:0;
+  overflow:hidden;
+  transition:opacity .6s ease, max-height .8s ease, margin .6s ease;
+}
+.final-message.show{
+  opacity:1;
+  max-height:400px;
+  margin-top:20px;
+}
+.signature{
+  font-family:'Dancing Script', cursive;
+  font-size:30px;
+  color:var(--deep);
+  margin-top:10px;
+}
+
+.close-letter-btn{
+  margin-top:26px;
+  background:none;
+  border:none;
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:16px;
+  color:var(--rose);
+  cursor:pointer;
+  letter-spacing:.3px;
+  padding:6px 10px;
+  transition:color .2s ease, transform .2s ease;
+}
+.close-letter-btn:hover{ color:var(--deep); transform:translateY(-1px); }
+
+/* ===== NAV ===== */
+.nav{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin-top:18px;
+  transition:opacity .3s ease;
+}
+.nav.hidden{
+  opacity:0;
+  pointer-events:none;
+}
+.nav button{
+  background:var(--paper);
+  border:1px solid rgba(140,58,70,.2);
+  color:var(--deep);
+  width:38px; height:38px;
+  border-radius:50%;
+  font-size:18px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .2s ease, background .2s ease;
+  box-shadow:0 4px 10px rgba(140,58,70,.12);
+}
+.nav button:hover{ transform:translateY(-2px); background:var(--rose-light); }
+.nav button:disabled{ opacity:.25; cursor:default; transform:none; }
+
+.dots{ display:flex; gap:8px; }
+.dot{
+  width:8px; height:8px;
+  border-radius:50%;
+  background:rgba(140,58,70,.25);
+  cursor:pointer;
+  transition:all .25s ease;
+}
+.dot.active{
+  background:var(--deep);
+  transform:scale(1.3);
+}
+
+/* ===== DEDICATION OVERLAY ===== */
+.dedication-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(20,10,12,0);
+  backdrop-filter:blur(0px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .7s ease, background .7s ease, backdrop-filter .7s ease;
+  padding:24px;
+}
+.dedication-overlay.show{
+  background:rgba(20,10,12,.92);
+  backdrop-filter:blur(2px);
+  opacity:1;
+  pointer-events:auto;
+}
+.dedication-content{
+  max-width:480px;
+  width:100%;
+  text-align:center;
+  transform:translateY(14px) scale(.97);
+  opacity:0;
+  transition:opacity .6s ease .15s, transform .6s ease .15s;
+}
+.dedication-overlay.show .dedication-content{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+.dedication-photo{
+  width:100%;
+  max-height:360px;
+  object-fit:cover;
+  border-radius:6px;
+  box-shadow:0 20px 50px -10px rgba(0,0,0,.6);
+  border:4px solid #fffaf3;
+}
+.dedication-text{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-size:21px;
+  line-height:1.7;
+  color:#f6e9ea;
+  margin-top:24px;
+}
+.dedication-signature{
+  font-family:'Dancing Script', cursive;
+  font-size:28px;
+  color:var(--rose-light);
+  margin-top:14px;
+}
+.ded-close{
+  position:absolute;
+  top:22px;
+  right:26px;
+  background:none;
+  border:1px solid rgba(255,255,255,.35);
+  color:#f6e9ea;
+  width:38px; height:38px;
+  border-radius:50%;
+  font-size:18px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s ease, transform .2s ease;
+}
+.ded-close:hover{ background:rgba(255,255,255,.12); transform:rotate(90deg); }
+
+@media (max-width:480px){
+  .page{ padding:40px 26px 34px 34px; }
+  .book{ min-height:560px; }
+  .pages{ min-height:560px; }
+  .chapter-title{ font-size:23px; }
+  .page-text{ font-size:18px; }
+  .cover h1{ font-size:27px; }
+  .cover-photo-frame{ height:360px; }
+  .dedication-photo{ max-height:300px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient" id="ambient"></div>
+
+<audio id="bgm" src="miniña.mp3" preload="auto" loop></audio>
+
+<div class="stage">
+  <div class="book" id="book">
+    <div class="pages" id="pages">
+
+      <!-- COVER -->
+      <div class="page cover active" data-index="0">
+        <div class="cover-default">
+          <div class="seal">A</div>
+          <h1>Mi Niña Hermosa</h1>
+          <p class="sub">un pequeño libro Para Ti</p>
+          <button class="open-btn" id="openBtn">Abrir el libro</button>
+        </div>
+        <div class="cover-photo">
+          <div class="cover-photo-frame" id="coverPhotoFrame">
+            <img src="amor.jpg" alt="Nosotros">
+            <p class="cover-photo-caption">toca la foto para volver a leer</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 1 -->
+      <div class="page" data-index="1">
+        <p class="eyebrow">Capítulo I</p>
+        <h2 class="chapter-title">El principio</h2>
+        <p class="page-text dropcap">Si esto fuera un libro de verdad; Este libro sería infinito e interminable, porque en él estaría escrito todo lo que siento por ti, miles y millones de sentimientos que son pocas las palabras y el tiempo para decirte todo lo que me haces sentir, todo lo que haces que mi corazón viva, tú serías la razón por la que sería escrito. Cada página está hecha de algo que siento por ti, algo que te digo siempre, pero quiero recordarte en cada momento, de todas las formas posibles, escrito, para que nunca se pierda.</p>
+        <div class="corner" data-next></div>
+      </div>
+
+      <!-- PAGE 2 -->
+      <div class="page" data-index="2">
+        <p class="eyebrow">Capítulo II</p>
+        <h2 class="chapter-title">Te amo</h2>
+        <p class="page-text">Te amo. Así, simple y enorme a la vez. Te quiero con la calma de quien ya no tiene dudas, y con la emoción de quien te sigue descubriendo cada día como si fuera la primera vez. Te amo más de lo que estas letras pueden cargar, y aun así es poco comparado con lo que realmente lo siento, como realmente quisiera que sintieras mi amor.</p>
+        <div class="corner" data-next></div>
+      </div>
+
+      <!-- PAGE 3 - interactive petals -->
+      <div class="page" data-index="3">
+        <p class="eyebrow">Capítulo III</p>
+        <h2 class="chapter-title">Todo lo que eres</h2>
+        <p class="page-text">Quiero todo lo que eres. Cada detalle de tu personalidad, de tu ser, de tu esencia, me parece fascinante. Toca cada palabra:</p>
+        <div class="petals" id="petals">
+          <span class="petal" data-text="Tu risa, que me alegra hasta los días grises.">tu risa</span>
+          <span class="petal" data-text="Tu forma de ver el mundo, tan tuya, tan tierna.">tu forma de ver el mundo</span>
+          <span class="petal" data-text="Tus expresiones que siempre me parecen tan lindas y tan únicas, cada gesto tuyo.">tus detalles</span>
+          <span class="petal" data-text="Tu cariño cuando te acercas a mí que me hace querer cuidarte de todo.">tu cariño</span>
+          <span class="petal" data-text="Tu fuerza, aun en los momentos que no lo notas.">tu fuerza</span>
+          <span class="petal" data-text="Todo lo que te hace ser tu, el como piensas, el como eres, y el como eres tú tan única y solamente y simplemente tú.">tu ser</span>
+        </div>
+        <p class="petal-reveal" id="petalReveal"></p>
+        <p class="petal-progress" id="petalProgress">toca las palabras para descubrir más ✿</p>
+        <div class="corner" data-next></div>
+      </div>
+
+      <!-- PAGE 4 -->
+      <div class="page" data-index="4">
+        <p class="eyebrow">Capítulo IV</p>
+        <h2 class="chapter-title">Única</h2>
+        <p class="page-text">Como tú no hay ninguna, y nunca la habrá. Es lo que veo cada vez que te miro. No hay comparación posible, porque tú no compites con nadie, tú simplemente eres tú, y eso ya es <b>perfecto</b>. Única, increíble, hermosa, magistral. Así te veo yo.</p>
+        <div class="corner" data-next></div>
+      </div>
+
+      <!-- PAGE 5 - final -->
+      <div class="page final-page" data-index="5">
+        <p class="eyebrow">Capítulo V</p>
+        <h2 class="chapter-title">Todo para mí</h2>
+        <p class="page-text">Eres todo para mí. Te adoro, te elijo, te amo.</p>
+        <button class="heart-btn" id="heartBtn" aria-label="presiona el corazón">
+          <svg viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#c97b86" d="M16 28.5S1.5 19.6 1.5 9.8C1.5 4.9 5.4 1 10.2 1c3 0 5.2 1.5 6.8 4 1.6-2.5 3.8-4 6.8-4 4.8 0 8.7 3.9 8.7 8.8 0 9.8-14.5 18.7-14.5 18.7z"/>
+          </svg>
+        </button>
+        <p class="tap-hint" id="tapHint">presiona el corazón</p>
+        <div class="final-message" id="finalMessage">
+          Esta carta, como todo lo que siento por ti, nunca va a alcanzar para decirlo completo, entero.
+          <div class="signature">Te amo, Angy, Mi Princesita linda.<br>Tu Latoso Y que Siempre Te Quiere, FER 🤍</div>
+        </div>
+        <button class="close-letter-btn" id="closeLetterBtn">cerrar la carta ✕</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="heart-below" id="heartBelow">
+    <button class="heart-below-btn" id="heartBelowBtn" aria-label="ver dedicatoria">
+      <svg viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#8c3a46" d="M16 28.5S1.5 19.6 1.5 9.8C1.5 4.9 5.4 1 10.2 1c3 0 5.2 1.5 6.8 4 1.6-2.5 3.8-4 6.8-4 4.8 0 8.7 3.9 8.7 8.8 0 9.8-14.5 18.7-14.5 18.7z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="nav" id="nav">
+    <button id="prevBtn" aria-label="anterior">‹</button>
+    <div class="dots" id="dots"></div>
+    <button id="nextBtn" aria-label="siguiente">›</button>
+  </div>
+</div>
+
+<div class="dedication-overlay" id="dedicationOverlay">
+  <button class="ded-close" id="dedClose" aria-label="cerrar dedicatoria">✕</button>
+  <div class="dedication-content">
+    <img src="amor2.jpg" alt="Nosotros" class="dedication-photo">
+    <p class="dedication-text">De todas las historias que pude haber vivido, me quedo con la nuestra. Gracias por ser mi persona favorita, mi lugar seguro, mi risa, mi para siempre. Por todo lo que quiero  seguir viviendo a tu lado.</p>
+    <p class="dedication-signature">Te amo con todo mi corazón. </p>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const total = pages.length;
+  let current = 0;
+  let isAnimating = false;
+
+  const dotsWrap = document.getElementById('dots');
+  pages.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => { if(!isAnimating) goTo(i); });
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  const nav = document.getElementById('nav');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const book = document.getElementById('book');
+  const pagesWrap = document.getElementById('pages');
+  const bgm = document.getElementById('bgm');
+  const heartBelow = document.getElementById('heartBelow');
+  const dedicationOverlay = document.getElementById('dedicationOverlay');
+  const coverEl = document.querySelector('.cover');
+
+  function updateNav(){
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+    dots.forEach((d,i) => d.classList.toggle('active', i === current));
+  }
+
+  function goTo(i){
+    if (i < 0 || i >= total || i === current) return;
+    pages[current].classList.remove('active');
+    pages[current].classList.add('leaving');
+    setTimeout(() => pages[current].classList.remove('leaving'), 560);
+    current = i;
+    pages[current].classList.add('active');
+    updateNav();
+  }
+
+  prevBtn.addEventListener('click', () => { if(!isAnimating) goTo(current - 1); });
+  nextBtn.addEventListener('click', () => { if(!isAnimating) goTo(current + 1); });
+  document.getElementById('openBtn').addEventListener('click', openBook);
+  document.querySelectorAll('[data-next]').forEach(c => c.addEventListener('click', () => { if(!isAnimating) goTo(current + 1); }));
+
+  document.addEventListener('keydown', (e) => {
+    if (isAnimating) return;
+    if (e.key === 'ArrowRight') goTo(current + 1);
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+  });
+
+  updateNav();
+
+  // ---- open / close the book ----
+  function openBook(){
+    if (isAnimating) return;
+    heartBelow.classList.remove('show');
+    nav.classList.remove('hidden');
+    try{ bgm.currentTime = 0; bgm.play().catch(()=>{}); }catch(e){}
+    goTo(1);
+  }
+
+  function flipBack(cb){
+    if (current > 0){
+      goTo(current - 1);
+      setTimeout(() => flipBack(cb), 150);
+    } else {
+      cb();
+    }
+  }
+
+  function closeBook(){
+    if (isAnimating) return;
+    isAnimating = true;
+    nav.classList.add('hidden');
+    pagesWrap.classList.add('fast');
+    flipBack(() => {
+      pagesWrap.classList.remove('fast');
+      book.classList.add('closing');
+      setTimeout(() => { coverEl.classList.add('photo-mode'); }, 420);
+      setTimeout(() => {
+        book.classList.remove('closing');
+        isAnimating = false;
+        heartBelow.classList.add('show');
+      }, 900);
+    });
+  }
+
+  document.getElementById('closeLetterBtn').addEventListener('click', closeBook);
+  document.getElementById('coverPhotoFrame').addEventListener('click', openBook);
+
+  // ---- dedication overlay ----
+  const heartBelowBtn = document.getElementById('heartBelowBtn');
+  const dedClose = document.getElementById('dedClose');
+
+  heartBelowBtn.addEventListener('click', () => {
+    dedicationOverlay.classList.add('show');
+  });
+  dedClose.addEventListener('click', () => {
+    dedicationOverlay.classList.remove('show');
+  });
+  dedicationOverlay.addEventListener('click', (e) => {
+    if (e.target === dedicationOverlay) dedicationOverlay.classList.remove('show');
+  });
+
+  // ---- petals interactivity ----
+  const petals = document.querySelectorAll('.petal');
+  const petalReveal = document.getElementById('petalReveal');
+  const petalProgress = document.getElementById('petalProgress');
+  let revealedCount = 0;
+  const messages = [
+    'toca las palabras para descubrir más ✿',
+    'sigue tocando ✿',
+    'cada una es real ✿',
+    'ya casi las descubres todas ✿',
+    'una más ✿',
+    'esto es solo una pequeña muestra de todo ✿'
+  ];
+  petals.forEach(p => {
+    p.addEventListener('click', () => {
+      petalReveal.textContent = p.getAttribute('data-text');
+      petalReveal.classList.remove('show');
+      void petalReveal.offsetWidth;
+      petalReveal.classList.add('show');
+      if (!p.classList.contains('revealed')) {
+        p.classList.add('revealed');
+        revealedCount++;
+        petalProgress.textContent = messages[Math.min(revealedCount, messages.length - 1)];
+      }
+    });
+  });
+
+  // ---- final heart button (in-page message) ----
+  const heartBtn = document.getElementById('heartBtn');
+  const finalMessage = document.getElementById('finalMessage');
+  const tapHint = document.getElementById('tapHint');
+  let opened = false;
+  heartBtn.addEventListener('click', (e) => {
+    burstHearts(e.clientX, e.clientY, 14);
+    if (!opened) {
+      opened = true;
+      finalMessage.classList.add('show');
+      tapHint.textContent = 'con todo mi corazón';
+    }
+  });
+
+  // ---- click hearts anywhere on the book ----
+  book.addEventListener('click', (e) => {
+    if (e.target.closest('#heartBtn') || e.target.closest('#coverPhotoFrame') || e.target.closest('#openBtn') || e.target.closest('#closeLetterBtn')) return;
+    spawnHeart(e.clientX, e.clientY);
+  });
+
+  function spawnHeart(x, y){
+    const h = document.createElement('div');
+    h.className = 'click-heart';
+    h.textContent = '♥';
+    h.style.left = (x - 10) + 'px';
+    h.style.top = (y - 10) + 'px';
+    h.style.color = Math.random() > 0.5 ? '#c97b86' : '#8c3a46';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1150);
+  }
+
+  function burstHearts(x, y, n){
+    for (let i = 0; i < n; i++){
+      setTimeout(() => {
+        const angle = (Math.PI * 2 * i) / n;
+        const dx = Math.cos(angle) * (30 + Math.random()*30);
+        const h = document.createElement('div');
+        h.className = 'click-heart';
+        h.textContent = '♥';
+        h.style.left = (x - 10 + dx) + 'px';
+        h.style.top = (y - 10) + 'px';
+        h.style.fontSize = (14 + Math.random()*12) + 'px';
+        h.style.color = Math.random() > 0.5 ? '#c97b86' : '#c9a15a';
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 1150);
+      }, i * 25);
+    }
+  }
+
+  // ---- ambient background hearts ----
+  const ambient = document.getElementById('ambient');
+  for (let i = 0; i < 10; i++){
+    const s = document.createElement('span');
+    s.textContent = '♥';
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = (12 + Math.random()*14) + 'px';
+    s.style.animationDuration = (14 + Math.random()*12) + 's';
+    s.style.animationDelay = (Math.random()*14) + 's';
+    ambient.appendChild(s);
+  }
+})();
+</script>
+
+</body>
+</html>
